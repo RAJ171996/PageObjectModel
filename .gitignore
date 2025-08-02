@@ -1,0 +1,29 @@
+# Eclipse files
+.project
+.classpath
+.settings/
+
+# Maven build output
+target/
+
+# TestNG output
+test-output/
+
+# Logs and environment
+*.log
+*.env
+
+# Java compiled files
+*.class
+
+# IDEA (if ever opened)
+*.iml
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*~ 
