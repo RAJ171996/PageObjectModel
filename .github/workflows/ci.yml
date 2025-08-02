@@ -52,14 +52,20 @@ jobs:
           if [ "${{ steps.run_tests.outcome }}" = "success" ]; then
             STATUS="SUCCESS"
             ICON=":white_check_mark:"
+            FAIL_DETAILS=""
           else
             STATUS="FAILURE"
             ICON=":x:"
+            if [ -s tmp/failed_tests.txt ]; then
+              FAIL_DETAILS="\n*Failed Tests:* $(tr '\n' ', ' < tmp/failed_tests.txt)"
+            else
+              FAIL_DETAILS="\nNo failed test details found."
+            fi
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
+          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)$FAIL_DETAILS"
 
           curl -X POST -H 'Content-type: application/json' \
                --data "{\"text\":\"$MESSAGE\"}" \
