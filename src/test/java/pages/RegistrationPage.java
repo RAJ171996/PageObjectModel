@@ -30,7 +30,7 @@ public class RegistrationPage {
 	By phoneNumberTextBox = By.xpath("//input[@id='vfb-19']");
 	By verificationTextBox = By.xpath("//input[@id='vfb-3']");
 	By getVerificationNumber = By.xpath("//label[normalize-space()='Example: 33']");
-	By submitButton = By.xpath("//input[@id='vfb-4']");
+	By submitButton = By.xpath("//input[@id='vfb-']");
 
 	// Constructor
 	public RegistrationPage(WebDriver driver) {
