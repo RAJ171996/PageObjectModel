@@ -62,9 +62,8 @@ jobs:
             fi
           fi
 
-          MESSAGE="$ICON CI $STATUS in *${{ github.repository }}* on branch *${{ github.ref_name }}*.
-<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run Logs>$FAIL_DETAILS"
+          MESSAGE="$ICON CI $STATUS in *${{ github.repository }}* on branch *${{ github.ref_name }}*.\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run Logs>$FAIL_DETAILS"
 
           curl -X POST -H 'Content-type: application/json' \
-               --data "{\"text\":\"$MESSAGE\"}" \
-               "$SLACK_WEBHOOK_URL"
+            --data "{\"text\":\"$MESSAGE\"}" \
+            "$SLACK_WEBHOOK_URL"
