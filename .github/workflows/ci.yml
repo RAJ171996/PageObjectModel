@@ -1,0 +1,55 @@
+name: CI - Maven TestNG with Slack Notifications
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 11
+          cache: maven
+
+      - name: Run Maven Tests
+        id: run_tests
+        run: mvn clean test
+        continue-on-error: true
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            test-output/**
+            reports/**/*.html
+
+      - name: Slack Notification
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="SUCCESS"
+          ICON=":white_check_mark:"
+          if [ "${{ steps.run_tests.outcome }}" != "success" ]; then
+            STATUS="FAILURE"
+            ICON=":x:"
+          fi
+
+          MESSAGE="$ICON CI $STATUS in *${{ github.repository }}* on branch *${{ github.ref_name }}*.
+<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run Logs>"
+
+          curl -X POST -H 'Content-type: application/json' \
+               --data "{\"text\":\"$MESSAGE\"}" \
+               "$SLACK_WEBHOOK_URL"
