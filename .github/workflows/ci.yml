@@ -49,21 +49,18 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          STATUS="SUCCESS"
-          ICON=":white_check_mark:"
-          FAIL_DETAILS=""
-          if [ "${{ steps.run_tests.outcome }}" != "success" ]; then
+          if [ "${{ steps.run_tests.outcome }}" = "success" ]; then
+            STATUS="SUCCESS"
+            ICON=":white_check_mark:"
+          else
             STATUS="FAILURE"
             ICON=":x:"
-            if [ -s tmp/failed_tests.txt ]; then
-              FAIL_DETAILS="\n*Failed Tests:* $(tr '\n' ', ' < tmp/failed_tests.txt)"
-            else
-              FAIL_DETAILS="\nNo failed test details found."
-            fi
           fi
 
-          MESSAGE="$ICON CI $STATUS in *${{ github.repository }}* on branch *${{ github.ref_name }}*.\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run Logs>$FAIL_DETAILS"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
 
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"$MESSAGE\"}" \
-            "$SLACK_WEBHOOK_URL"
+               --data "{\"text\":\"$MESSAGE\"}" \
+               "$SLACK_WEBHOOK_URL"
