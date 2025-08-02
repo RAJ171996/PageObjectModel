@@ -8,7 +8,7 @@ public class SuccessfulMessagePage {
 	public WebDriver driver;
 
 	// Locators
-	By successfulTextMessage = By.xpath("//div[@id='messageContaine']");
+	By successfulTextMessage = By.xpath("//div[@id='messageContain']");
 
 	// Constructor
 	public SuccessfulMessagePage(WebDriver driver) {
