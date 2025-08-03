@@ -3,6 +3,7 @@ package testcases;
 import java.time.Duration;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -22,7 +23,9 @@ public class RegistrationFormTest {
 
 	@BeforeClass
 	public void setUp(ITestContext context) {
-		driver = new ChromeDriver();
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
+		driver = new ChromeDriver(options);
 		context.setAttribute("WebDriver", driver);
 		driver.manage().window().maximize();
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
@@ -44,7 +47,7 @@ public class RegistrationFormTest {
 	}
 
 	@Test(priority = 2)
-	public void fillRegistrationFormTest() throws InterruptedException {
+	public void fillRegistrationFormTest(){
 		registrationPage.enterFirstName("Raj");
 		registrationPage.enterLastName("Kumar");
 		registrationPage.clickMaleRadioBtn();
