@@ -23,7 +23,7 @@ jobs:
 
       - name: Run Maven Tests
         id: run_tests
-        run: mvn clean test || true  # ensures workflow continues even if tests fail
+        run: mvn clean test
 
       - name: Extract Failed Test Names
         if: always()
@@ -49,12 +49,12 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          if [ "${{ steps.run_tests.outcome }}" = "success" ]; then
-            STATUS="SUCCESS"
-            ICON=":white_check_mark:"
-          else
+          if grep -q FAIL tmp/failed_tests.txt; then
             STATUS="FAILURE"
             ICON=":x:"
+          else
+            STATUS="SUCCESS"
+            ICON=":white_check_mark:"
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
