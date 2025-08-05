@@ -23,42 +23,51 @@ jobs:
 
       - name: Run Maven Tests
         id: run_tests
+        run: mvn clean test || true  # Prevents workflow from stopping if tests fail
+
+      - name: Extract Failed Test Names
+        if: always()
         run: |
           mkdir -p tmp
-          mvn clean test || true  # continue even if tests fail
+          if [ -f test-output/testng-results.xml ]; then
+            grep -oP '(?<=<test-method status="FAIL" name=")[^"]+' test-output/testng-results.xml > tmp/failed_tests.txt || true
+          else
+            echo "No testng-results.xml found" > tmp/failed_tests.txt
+          fi
 
       - name: Upload Reports and Screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-artifacts
+          name: reports
           path: |
-            test-output/**
             reports/**
             screenshots/**
-            tmp/**
 
-      - name: Slack Notification with Screenshot
+      - name: Slack Notification
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          STATUS="${{ steps.run_tests.outcome }}"
-          ICON=":white_check_mark:"
-          if [ "$STATUS" != "success" ]; then
-            ICON=":x:"
+          if [ -s tmp/failed_tests.txt ]; then
             STATUS="FAILURE"
+            ICON=":x:"
           else
             STATUS="SUCCESS"
+            ICON=":white_check_mark:"
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
 
-          MESSAGE="$ICON CI $STATUS - <${RUN_URL}|View Run>"
+          curl -X POST -H 'Content-type: application/json' \
+               --data "{\"text\":\"$MESSAGE\"}" \
+               "$SLACK_WEBHOOK_URL"
 
-          if [ -f tmp/screenshot-path.txt ]; then
-            SCREENSHOT=$(ls screenshots/*.png | head -1)
-            curl -F file=@"$SCREENSHOT" -F "initial_comment=$MESSAGE" -F channels="#your-channel-name" -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" https://slack.com/api/files.upload
-          else
-            curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$MESSAGE\"}" "$SLACK_WEBHOOK_URL"
+      - name: Fail workflow if tests failed
+        if: always()
+        run: |
+          if [ -s tmp/failed_tests.txt ]; then
+            echo "Tests failed. Failing job..."
+            exit 1
           fi
