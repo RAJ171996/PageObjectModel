@@ -9,7 +9,7 @@ public class SuccessfulMessagePage {
 	private WebDriver driver;
 
 	// Locators
-	private final By successfulTextMessage = By.xpath("//div[@id='messageContain']");
+	private final By successfulTextMessage = By.xpath("//div[@id='messageContainer']");
 
 	// Constructor
 	public SuccessfulMessagePage(WebDriver driver) {
