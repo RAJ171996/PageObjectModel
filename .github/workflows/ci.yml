@@ -58,7 +58,7 @@ jobs:
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
+          MESSAGE="$ICON BUILD $STATUS - [View Run]($RUN_URL)"
 
           curl -X POST -H 'Content-type: application/json' \
                --data "{\"text\":\"$MESSAGE\"}" \
