@@ -23,16 +23,31 @@ jobs:
 
       - name: Run Maven Tests
         id: run_tests
-        run: mvn clean test || true  # Prevents workflow from stopping if tests fail
+        run: mvn clean test
+
+      - name: Print testng-results.xml for debugging
+        if: always()
+        run: |
+          if [ -f test-output/testng-results.xml ]; then
+            echo "=== testng-results.xml ==="
+            cat test-output/testng-results.xml
+          else
+            echo "testng-results.xml not found"
+          fi
 
       - name: Extract Failed Test Names
         if: always()
         run: |
           mkdir -p tmp
           if [ -f test-output/testng-results.xml ]; then
-            grep -oP '(?<=<test-method status="FAIL" name=")[^"]+' test-output/testng-results.xml > tmp/failed_tests.txt || true
+            FAILED=$(grep -oP '(?<=<test-method status="FAIL" name=")[^"]+' test-output/testng-results.xml || true)
+            if [ -n "$FAILED" ]; then
+              echo "$FAILED" > tmp/failed_tests.txt
+            else
+              echo "" > tmp/failed_tests.txt
+            fi
           else
-            echo "No testng-results.xml found" > tmp/failed_tests.txt
+            echo "" > tmp/failed_tests.txt
           fi
 
       - name: Upload Reports and Screenshots
