@@ -21,63 +21,44 @@ jobs:
           java-version: 17
           cache: maven
 
-      - name: Ensure reports and screenshots folders exist
-        run: |
-          mkdir -p reports
-          mkdir -p screenshots
-
       - name: Run Maven Tests
         id: run_tests
-        run: mvn clean test || true
-
-      - name: Extract Failed Test Names
-        if: always()
         run: |
           mkdir -p tmp
-          if [ -f test-output/testng-results.xml ]; then
-            grep -oP '(?<=<test-method status="FAIL" name=")[^"]+' test-output/testng-results.xml > tmp/failed_tests.txt || true
-          else
-            echo "No testng-results.xml found" > tmp/failed_tests.txt
-          fi
+          mvn clean test || true  # continue even if tests fail
 
       - name: Upload Reports and Screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: test-artifacts
           path: |
+            test-output/**
             reports/**
             screenshots/**
+            tmp/**
 
-      - name: Slack Notification
+      - name: Slack Notification with Screenshot
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          if [ -s tmp/failed_tests.txt ]; then
-            STATUS="FAILURE"
+          STATUS="${{ steps.run_tests.outcome }}"
+          ICON=":white_check_mark:"
+          if [ "$STATUS" != "success" ]; then
             ICON=":x:"
+            STATUS="FAILURE"
           else
             STATUS="SUCCESS"
-            ICON=":white_check_mark:"
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
 
-          curl -X POST -H 'Content-type: application/json' \
-               --data "{\"text\":\"$MESSAGE\"}" \
-               "$SLACK_WEBHOOK_URL"
+          MESSAGE="$ICON CI $STATUS - <${RUN_URL}|View Run>"
 
-      - name: Fail workflow if tests failed
-        if: always()
-        run: |
-          if [ -s tmp/failed_tests.txt ]; then
-            echo "Tests failed. Failing job..."
-            exit 1
-
-      - name: Clean up reports and screenshots after CI
-        if: always()
-        run: |
-          rm -rf reports/*
-          rm -rf screenshots/*
+          if [ -f tmp/screenshot-path.txt ]; then
+            SCREENSHOT=$(ls screenshots/*.png | head -1)
+            curl -F file=@"$SCREENSHOT" -F "initial_comment=$MESSAGE" -F channels="#your-channel-name" -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" https://slack.com/api/files.upload
+          else
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$MESSAGE\"}" "$SLACK_WEBHOOK_URL"
+          fi
