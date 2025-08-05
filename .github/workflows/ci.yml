@@ -23,7 +23,7 @@ jobs:
 
       - name: Run Maven Tests
         id: run_tests
-        run: mvn clean test || true  # Prevents workflow from stopping if tests fail
+        run: mvn clean test
 
       - name: Extract Failed Test Names
         if: always()
