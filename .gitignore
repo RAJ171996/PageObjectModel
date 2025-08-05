@@ -1,29 +1,37 @@
 # Maven build
 /target/
-.mvn/
-logs/
+!.gitkeep
+
+# Logs
 *.log
+logs/
 
-# IDE config
-*.iml
+# IDE settings
 .idea/
+*.iml
 .vscode/
-.project
-.classpath
-.settings/
 
-# OS-generated files
+# OS files
 .DS_Store
+Thumbs.db
 
-# Java build artifacts
+# Java
 *.class
 *.jar
 *.war
 *.ear
 
-# Temporary
+# Reports
+/test-output/
+extent-reports/
+*.html
+*.xml
+*.json
+
+# Temporary files
 *.tmp
-hs_err_pid*
+*.swp
 
-
-
+# CI/CD
+.env
+*.properties.local
