@@ -1,3 +1,4 @@
+
 package pages;
 
 import org.openqa.selenium.By;
@@ -5,10 +6,10 @@ import org.openqa.selenium.WebDriver;
 
 public class SuccessfulMessagePage {
 
-	public WebDriver driver;
+	private WebDriver driver;
 
 	// Locators
-	By successfulTextMessage = By.xpath("//div[@id='messageContain']");
+	private final By successfulTextMessage = By.xpath("//div[@id='messageContainer']");
 
 	// Constructor
 	public SuccessfulMessagePage(WebDriver driver) {

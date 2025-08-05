@@ -6,6 +6,7 @@ import org.openqa.selenium.WebDriver;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -14,8 +15,7 @@ public class ScreenshotUtil {
         String timestamp = new SimpleDateFormat("dd-MMM-yyyy hh.mm.ss a").format(new Date());
         String dirPath = "screenshots";
         String fileName = methodName + "-" + timestamp + ".png";
-  
-        // Ensure the screenshots directory exists
+
         File screenshotsDir = new File(dirPath);
         if (!screenshotsDir.exists()) {
             screenshotsDir.mkdirs();
@@ -25,7 +25,7 @@ public class ScreenshotUtil {
         File dest = new File(screenshotsDir, fileName);
 
         try {
-            Files.copy(src.toPath(), dest.toPath());
+            Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,53 +1,51 @@
 package testcases;
 
-import java.time.Duration;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestContext;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+
 import pages.HomePage;
 import pages.RegistrationPage;
 import pages.SuccessfulMessagePage;
 
-@Listeners({utils.TestListener.class}) // Link to the TestListener class
+@Listeners(utils.TestListener.class) // Register the TestListener for reporting
 public class RegistrationFormTest {
 
-	public WebDriver driver;
+	WebDriver driver;
 	HomePage homePage;
 	RegistrationPage registrationPage;
 	SuccessfulMessagePage validationPage;
 
-	@BeforeClass
+	@BeforeMethod
 	public void setUp(ITestContext context) {
+		// Set up Chrome in headless mode
 		ChromeOptions options = new ChromeOptions();
-		options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
-		driver = new ChromeDriver(options);
-		context.setAttribute("WebDriver", driver);
-		driver.manage().window().maximize();
-		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-		driver.get("https://vinothqaacademy.com/");
-		System.out.println("Browser launched successfully and navigated to the URL.");
+		options.addArguments("--headless"); // Run in headless mode
+		options.addArguments("--disable-gpu"); // Recommended for Windows
+		options.addArguments("--window-size=1920,1080"); // Emulate full screen
+		options.addArguments("--remote-allow-origins=*"); // Prevent CORS issues (ChromeDriver 111+)
 
-		// Initialize page objects
+		driver = new ChromeDriver(options);
+		// driver.manage().window().maximize(); // Do not maximize in headless mode
+		driver.get("https://vinothqaacademy.com/");
+
+		// Share WebDriver with listeners
+		context.setAttribute("WebDriver", driver);
+
+		// Initialize Page Objects
 		homePage = new HomePage(driver);
 		registrationPage = new RegistrationPage(driver);
 		validationPage = new SuccessfulMessagePage(driver);
 	}
 
-	@Test(priority = 1)
+	@Test
 	public void navigateToRegistrationFormTest() {
-		homePage.hoverOnDemoSites();
-		homePage.hoverOnPracticeAutomation();
-		homePage.clickOnRegistrationForm();
-		System.out.println("Navigated to Registration Form successfully.");
-	}
-
-	@Test(priority = 2)
-	public void fillRegistrationFormTest(){
+		homePage.navigateToRegistrationForm();
 		registrationPage.enterFirstName("Raj");
 		registrationPage.enterLastName("Kumar");
 		registrationPage.clickMaleRadioBtn();
@@ -67,18 +65,13 @@ public class RegistrationFormTest {
 		registrationPage.enterYourQuery("What is the course fees?");
 		registrationPage.enterVerificationNumber();
 		registrationPage.clickSubmitButton();
-		System.out.println("Registration form filled successfully.");
+		validationPage.validateSuccessfulTextMessage();
 	}
 
-	@Test(priority = 3)
-	public void validateSuccessfulMessageTest() {
-		validationPage.validateSuccessfulTextMessage();
-		System.out.println("Validation completed successfully.");
-	}
-	
-	@AfterClass
+	@AfterMethod
 	public void tearDown() {
-		driver.quit();
-		System.out.println("Browser closed successfully.");
+		if (driver != null) {
+			driver.quit();
+		}
 	}
 }

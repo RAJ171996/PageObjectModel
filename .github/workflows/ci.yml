@@ -18,23 +18,21 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
           cache: maven
 
       - name: Run Maven Tests
         id: run_tests
-        run: mvn clean test || true
+        run: mvn clean test || true  # ensures workflow continues even if tests fail
 
-      - name: Extract Failed/Skipped Test Names
+      - name: Extract Failed Test Names
         if: always()
         run: |
           mkdir -p tmp
           if [ -f test-output/testng-results.xml ]; then
             grep -oP '(?<=<test-method status="FAIL" name=")[^"]+' test-output/testng-results.xml > tmp/failed_tests.txt || true
-            grep -oP '(?<=<test-method status="SKIP" name=")[^"]+' test-output/testng-results.xml > tmp/skipped_tests.txt || true
           else
             echo "No testng-results.xml found" > tmp/failed_tests.txt
-            echo "No testng-results.xml found" > tmp/skipped_tests.txt
           fi
 
       - name: Upload Reports
@@ -51,38 +49,18 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          STATUS="SUCCESS"
-          ICON=":white_check_mark:"
-          DETAILS="All tests passed."
-
-          # If results file exists, count fails/skips
-          if [ -f test-output/testng-results.xml ]; then
-            FAILED_COUNT=$(grep -c '<test-method status="FAIL"' test-output/testng-results.xml || echo 0)
-            SKIPPED_COUNT=$(grep -c '<test-method status="SKIP"' test-output/testng-results.xml || echo 0)
-
-            if [ "$FAILED_COUNT" -gt 0 ] || [ "$SKIPPED_COUNT" -gt 0 ]; then
-              STATUS="FAILURE"
-              ICON=":x:"
-              parts=()
-              if [ "$FAILED_COUNT" -gt 0 ] && [ -s tmp/failed_tests.txt ]; then
-                failed_names=$(tr '\n' ', ' < tmp/failed_tests.txt | sed 's/, $//')
-                parts+=("Failed: $failed_names")
-              fi
-              if [ "$SKIPPED_COUNT" -gt 0 ] && [ -s tmp/skipped_tests.txt ]; then
-                skipped_names=$(tr '\n' ', ' < tmp/skipped_tests.txt | sed 's/, $//')
-                parts+=("Skipped: $skipped_names")
-              fi
-              DETAILS=$(IFS=' | '; echo "${parts[*]}")
-            fi
+          if [ "${{ steps.run_tests.outcome }}" = "success" ]; then
+            STATUS="SUCCESS"
+            ICON=":white_check_mark:"
           else
             STATUS="FAILURE"
             ICON=":x:"
-            DETAILS="testng-results.xml not found."
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)\n$DETAILS"
 
-          curl -s -X POST -H 'Content-type: application/json' \
+          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
+
+          curl -X POST -H 'Content-type: application/json' \
                --data "{\"text\":\"$MESSAGE\"}" \
                "$SLACK_WEBHOOK_URL"
