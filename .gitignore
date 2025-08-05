@@ -4,10 +4,6 @@
 logs/
 *.log
 
-# Reports and Screenshots
-/reports/
-/screenshots/
-/test-output/
 
 # IDE config
 *.iml
