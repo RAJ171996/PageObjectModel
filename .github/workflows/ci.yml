@@ -41,7 +41,7 @@ jobs:
         with:
           name: reports
           path: |
-            test-output/**
+            reports/**
             screenshots/**
 
       - name: Slack Notification
