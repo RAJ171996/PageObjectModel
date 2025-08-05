@@ -35,19 +35,14 @@ jobs:
             echo "No testng-results.xml found" > tmp/failed_tests.txt
           fi
 
-      - name: Upload Screenshots (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: screenshots/
-
-      - name: Upload Extent Report
+      - name: Upload Reports and Screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: extent-report
-          path: reports/
+          name: reports
+          path: |
+            reports/**
+            screenshots/**
 
       - name: Slack Notification
         if: always()
