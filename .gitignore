@@ -25,5 +25,5 @@ logs/
 *.tmp
 hs_err_pid*
 
-# GitHub
-.github/workflows/*.log
+
+
