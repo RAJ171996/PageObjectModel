@@ -13,7 +13,7 @@ import org.openqa.selenium.WebDriver;
 
 public class ScreenshotUtil {
 	public static String captureScreenshot(WebDriver driver, String methodName) {
-		String timestamp = new SimpleDateFormat("dd-MMM-yyyy hh.mm.ss a").format(new Date());
+		String timestamp = new SimpleDateFormat("dd-MMM-yyyy-hh.mm.ss-a").format(new Date());
 		String dirPath = "screenshots";
 		String fileName = methodName + "-" + timestamp + ".png";
 
@@ -27,9 +27,11 @@ public class ScreenshotUtil {
 
 		try {
 			Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			System.out.println("📸 Screenshot saved at: " + dest.getAbsolutePath());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return "screenshots/" + fileName;
+		return dest.getAbsolutePath();
+
 	}
 }
