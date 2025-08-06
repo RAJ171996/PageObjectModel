@@ -16,10 +16,10 @@ import pages.SuccessfulMessagePage;
 @Listeners(utils.TestListener.class) // Register the TestListener for reporting
 public class RegistrationFormTest {
 
-	WebDriver driver;
-	HomePage homePage;
-	RegistrationPage registrationPage;
-	SuccessfulMessagePage validationPage;
+	private WebDriver driver;
+	private HomePage homePage;
+	private RegistrationPage registrationPage;
+	private SuccessfulMessagePage validationPage;
 
 	@BeforeMethod
 	public void setUp(ITestContext context) {
