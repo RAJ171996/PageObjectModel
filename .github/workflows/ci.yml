@@ -1,4 +1,4 @@
-name: CI - Maven TestNG with Slack Notifications
+name: CI - TestNG + Maven + Slack
 
 on:
   push:
@@ -11,65 +11,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # Step 1: Repo clone
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      # Step 2: Java 17 install
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-          cache: maven
 
-      - name: Run Maven Tests
-        id: run_tests
+      # Step 3: Maven test run (auto fail on test failure)
+      - name: Run Tests with Maven
         run: mvn clean test
 
-      - name: Print testng-results.xml for debugging
-        if: always()
-        run: |
-          if [ -f test-output/testng-results.xml ]; then
-            echo "=== testng-results.xml ==="
-            cat test-output/testng-results.xml
-          else
-            echo "testng-results.xml not found"
-          fi
-
-      - name: Extract Failed Test Names
-        if: always()
-        run: |
-          mkdir -p tmp
-          if [ -f test-output/testng-results.xml ]; then
-            FAILED=$(grep -oP '(?<=<test-method status="FAIL" name=")[^"]+' test-output/testng-results.xml || true)
-            if [ -n "$FAILED" ]; then
-              echo "$FAILED" > tmp/failed_tests.txt
-            else
-              echo "" > tmp/failed_tests.txt
-            fi
-          else
-            echo "" > tmp/failed_tests.txt
-          fi
-
-      - name: Upload Reports and Screenshots
+      # Step 4: Upload Reports & Screenshots
+      - name: Upload Artifacts (Extent Report & Screenshots)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: test-artifacts
           path: |
             reports/**
             screenshots/**
 
+      # Step 5: Slack Notification (based on job result)
       - name: Slack Notification
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          if [ -s tmp/failed_tests.txt ]; then
-            STATUS="FAILURE"
-            ICON=":x:"
-          else
+          if [ "${{ job.status }}" == "success" ]; then
             STATUS="SUCCESS"
             ICON=":white_check_mark:"
+          else
+            STATUS="FAILURE"
+            ICON=":x:"
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -78,11 +56,3 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
                --data "{\"text\":\"$MESSAGE\"}" \
                "$SLACK_WEBHOOK_URL"
-
-      - name: Fail workflow if tests failed
-        if: always()
-        run: |
-          if [ -s tmp/failed_tests.txt ]; then
-            echo "Tests failed. Failing job..."
-            exit 1
-          fi
