@@ -9,7 +9,7 @@ public class SuccessfulMessagePage {
 	private WebDriver driver;
 
 	// Locators
-	private final By successfulTextMessage = By.xpath("//div[@id='messageContain']");
+	private final By successfulTextMessage = By.xpath("//div[@id='messageContainer']");
 
 	// Constructor
 	public SuccessfulMessagePage(WebDriver driver) {
@@ -28,9 +28,9 @@ public class SuccessfulMessagePage {
 
 		// Validate the actual message contains expected message
 		if (actualMessage.contains(expectedMessage)) {
-			System.out.println("Validation Passed: The message contains the expected text.");
+			System.out.println("Validation Passed: The actual message contains the expected text message.");
 		} else {
-			System.out.println("Validation Failed: The message does not contain the expected text.");
+			System.out.println("Validation Failed: The actual message does not contain the expected text message.");
 		}
 
 	}

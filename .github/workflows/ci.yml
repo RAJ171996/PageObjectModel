@@ -1,4 +1,4 @@
-name: CI - TestNG + Maven + Slack
+name: CI - Workflow with TestNG + Maven + Slack Notifications
 
 on:
   push:
@@ -51,7 +51,7 @@ jobs:
           fi
 
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MESSAGE="$ICON BUILD $STATUS - [View Run]($RUN_URL)"
+          MESSAGE="$ICON CI $STATUS - [View Run]($RUN_URL)"
 
           curl -X POST -H 'Content-type: application/json' \
                --data "{\"text\":\"$MESSAGE\"}" \
