@@ -35,7 +35,7 @@ public class RegistrationPage {
 	private By phoneNumberTextBox = By.xpath("//input[@id='vfb-19']");
 	private By verificationTextBox = By.xpath("//input[@id='vfb-3']");
 	private By getVerificationNumber = By.xpath("//label[normalize-space()='Example: 33']");
-	private By submitBtn = By.xpath("//input[@id='vfb-']");
+	private By submitBtn = By.xpath("//input[@id='vfb-4']");
 
 	public RegistrationPage(WebDriver driver) {
 		this.driver = driver;
